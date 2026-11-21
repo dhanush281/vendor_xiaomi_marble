@@ -6676,9 +6676,10 @@ cc_prebuilt_library_shared {
     target: {
         android_arm64: {
             srcs: [
-                "proprietary/vendor/lib64/hw/camera.qcom.so",
+                ":marble_camera_with_camx_shim",
             ],
             shared_libs: [
+                "libcamximageformatutils_shim",
                 "libc++",
                 "libcutils",
                 "liblog",
@@ -12081,4 +12082,16 @@ cc_prebuilt_binary {
     prefer: true,
     relative_install_path: "hw",
     soc_specific: true,
+}
+
+// Reproduce Cupid's camera ELF with the legacy CamX JPEG shim dependency.
+genrule {
+    name: "marble_camera_with_camx_shim",
+    tools: ["bspatch"],
+    srcs: [
+        "proprietary/vendor/lib64/hw/camera.qcom.so",
+        "patches/camera-link-shim.bsdiff",
+    ],
+    out: ["camera.qcom.so"],
+    cmd: "$(location bspatch) $(location proprietary/vendor/lib64/hw/camera.qcom.so) $(out) $(location patches/camera-link-shim.bsdiff)",
 }
